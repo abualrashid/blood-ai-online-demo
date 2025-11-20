@@ -17,6 +17,14 @@ def _is_valid_value(v):
         return False
     return v_float > 0
 
+# دالة مساعدة مرنة لاختيار أول حقل موجود
+def pick_first(d, *keys, default="غير مذكور"):
+    for key in keys:
+        value = d.get(key)
+        if value not in [None, ""]:
+            return value
+    return default
+
 def simple_rule_based_analysis(labs):
     wbc  = labs.get("WBC")
     rbc  = labs.get("RBC")
@@ -149,9 +157,10 @@ def simple_rule_based_analysis(labs):
     return results
 
 def build_reports(results, patient_info):
-    name   = patient_info.get("Name") or patient_info.get("FullName") or "غير مذكور"
-    age    = patient_info.get("Age", "غير مذكور")
-    gender = patient_info.get("Gender", "غير مذكور")
+    # مرونة اختيار الحقول، يقبل أي تهجئة أو لغة تقريباً
+    name = pick_first(patient_info, "Name", "FullName", "name", "fullName", "الاسم")
+    age = pick_first(patient_info, "Age", "age", "العمر")
+    gender = pick_first(patient_info, "Gender", "gender", "الجنس", "sex")
     now = datetime.now(LOCAL_TZ)
     now_str = now.strftime("%d-%m-%Y %H:%M")
     has_valid_labs = results.get("hasValidLabs", False)
